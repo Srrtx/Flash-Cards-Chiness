@@ -13,45 +13,37 @@
         .transform-style-3d { transform-style: preserve-3d; }
         .backface-hidden { backface-visibility: hidden; }
         .rotate-y-180 { transform: rotateY(180deg); }
+        button, select, input { touch-action: manipulation; }
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 pb-12">
 
     <!-- Navbar -->
     <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-30">
-        <div class="max-w-4xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-2">
+        <div class="max-w-4xl mx-auto px-3 sm:px-4 py-3 flex flex-col sm:flex-row sm:flex-wrap justify-between items-stretch sm:items-center gap-2">
             <h1 class="text-lg md:text-xl font-bold flex items-center gap-2">
                 <span>📚</span> Business Chinese 1
             </h1>
-            <div class="flex gap-2">
-                <button onclick="switchMode('flashcard')" id="btnModeFlashcard" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white text-indigo-600 shadow-sm transition">
+            <div class="flex w-full sm:w-auto gap-2">
+                <button onclick="switchMode('flashcard')" id="btnModeFlashcard" class="flex-1 sm:flex-none px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-white text-indigo-600 shadow-sm transition">
                     🗂️ โหมดการ์ดคำศัพท์
                 </button>
-                <button onclick="switchMode('list')" id="btnModeList" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-indigo-700 text-white hover:bg-indigo-800 transition">
+                <button onclick="switchMode('list')" id="btnModeList" class="flex-1 sm:flex-none px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-indigo-700 text-white hover:bg-indigo-800 transition">
                     📝 ดู/แก้ไขคลังคำศัพท์
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-4 mt-6">
+    <main class="max-w-4xl mx-auto px-3 sm:px-4 mt-4 sm:mt-6">
         <!-- Chapter & Filter Controls -->
-        <div class="bg-white p-4 rounded-xl shadow-sm mb-6 flex flex-wrap justify-between items-center gap-4">
-            <div class="flex flex-wrap items-center gap-2">
+        <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm mb-4 sm:mb-6 flex flex-col sm:flex-row sm:flex-wrap justify-between items-stretch sm:items-center gap-3 sm:gap-4">
+            <div id="chapterTabs" class="flex w-full sm:flex-1 items-center gap-2 overflow-x-auto whitespace-nowrap pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
                 <span class="text-sm font-semibold text-slate-500 mr-1">เลือกบทเรียน:</span>
-                <button onclick="setChapter(1)" id="tabCh1" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-indigo-600 text-white transition">
-                    บทที่ 1: นิทรรศการ (30)
-                </button>
-                <button onclick="setChapter(2)" id="tabCh2" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
-                    บทที่ 2: อสังหาริมทรัพย์ (30)
-                </button>
-                <button onclick="setChapter('all')" id="tabChAll" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
-                    รวมทั้งหมด (60)
-                </button>
             </div>
 
-            <div class="flex items-center gap-2">
-                <select id="statusFilter" onchange="applyFilter()" class="bg-slate-50 border border-slate-300 text-slate-700 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <div class="w-full sm:w-auto">
+                <select id="statusFilter" onchange="applyFilter()" class="w-full sm:w-auto bg-slate-50 border border-slate-300 text-slate-700 text-sm rounded-lg px-3 py-2 sm:py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     <option value="all">แสดงทั้งหมด</option>
                     <option value="unmemorized">❌ เฉพาะคำที่ยังจำไม่ได้</option>
                     <option value="memorized">✅ เฉพาะคำที่จำได้แล้ว</option>
@@ -62,7 +54,7 @@
         <!-- Progress Bar -->
         <div class="bg-white px-4 py-3 rounded-xl shadow-sm mb-6">
             <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1.5">
-                <span id="progressText">ความคืบหน้าการจำ: 0 / 30 คำ</span>
+                <span id="progressText">จำได้แล้ว: 0 / 30 คำ</span>
                 <span id="progressPercent">0%</span>
             </div>
             <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
@@ -85,10 +77,10 @@
                 </div>
 
                 <!-- 3D Flip Card -->
-                <div class="perspective w-full h-80 md:h-96 cursor-pointer mb-6" onclick="flipCard()">
+                <div class="perspective w-full h-[min(65vh,32rem)] min-h-[22rem] md:h-96 cursor-pointer mb-4 sm:mb-6" onclick="flipCard()">
                     <div id="cardInner" class="relative w-full h-full transition-transform duration-500 transform-style-3d">
                         <!-- Front -->
-                        <div class="absolute inset-0 bg-white rounded-2xl shadow-md border border-slate-300 p-6 flex flex-col justify-between items-center backface-hidden">
+                        <div class="absolute inset-0 overflow-y-auto bg-white rounded-2xl shadow-md border border-slate-300 p-4 sm:p-6 flex flex-col justify-between items-center backface-hidden">
                             <div class="w-full flex justify-between items-center text-xs text-slate-400">
                                 <span id="cardFrontChapter">บทที่ 1</span>
                                 <span>คลิกที่การ์ดเพื่อพลิกดูความหมาย 👆</span>
@@ -103,7 +95,7 @@
                         </div>
 
                         <!-- Back -->
-                        <div class="absolute inset-0 bg-indigo-50 rounded-2xl shadow-md border border-indigo-200 p-6 flex flex-col justify-between items-center backface-hidden rotate-y-180">
+                        <div class="absolute inset-0 overflow-y-auto bg-indigo-50 rounded-2xl shadow-md border border-indigo-200 p-4 sm:p-6 flex flex-col justify-between items-center backface-hidden rotate-y-180">
                             <div class="w-full flex justify-between items-center text-xs text-indigo-400">
                                 <span id="cardBackHanzi" class="chinese-text font-semibold text-base text-indigo-700">奖励旅行</span>
                                 <button onclick="speakCurrentWord(event)" class="px-2.5 py-1 rounded-md bg-white text-indigo-600 shadow-sm text-xs font-semibold">🔊 ฟังเสียง</button>
@@ -112,7 +104,7 @@
                                 <p id="cardPinyin" class="text-2xl md:text-3xl font-bold text-indigo-600">jiǎnglì lǔxíng</p>
                                 <hr class="border-indigo-200 w-24 mx-auto">
                                 <p id="cardThai" class="text-xl md:text-2xl font-bold text-slate-800">การท่องเที่ยวเพื่อเป็นรางวัล</p>
-                                <p id="cardEng" class="text-base md:text-base text-slate-500 font-medium">incentive travel</p>
+                                <p id="cardEng" class="text-xl md:text-2xl text-slate-500 font-medium">incentive travel</p>
                             </div>
                             <div class="text-xs text-indigo-400">คลิกเพื่อพลิกกลับด้านหน้า</div>
                         </div>
@@ -120,26 +112,34 @@
                 </div>
 
                 <!-- Controls -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                    <button onclick="prevCard()" class="py-3 px-4 bg-white border border-slate-300 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 shadow-sm transition">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-4">
+                    <button onclick="prevCard()" class="min-h-[44px] py-3 px-2 sm:px-4 bg-white border border-slate-300 rounded-xl font-semibold text-sm sm:text-base text-slate-700 hover:bg-slate-50 shadow-sm transition">
                         ⬅️ คำก่อนหน้า
                     </button>
-                    <button onclick="markWord(false)" class="py-3 px-4 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-semibold shadow-sm transition flex items-center justify-center gap-1.5">
+                    <button onclick="markWord(false)" class="min-h-[44px] py-3 px-2 sm:px-4 bg-rose-500 hover:bg-rose-600 text-sm sm:text-base text-white rounded-xl font-semibold shadow-sm transition flex items-center justify-center gap-1.5">
                         ❌ จำไม่ได้
                     </button>
-                    <button onclick="markWord(true)" class="py-3 px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-semibold shadow-sm transition flex items-center justify-center gap-1.5">
+                    <button onclick="markWord(true)" class="min-h-[44px] py-3 px-2 sm:px-4 bg-emerald-500 hover:bg-emerald-600 text-sm sm:text-base text-white rounded-xl font-semibold shadow-sm transition flex items-center justify-center gap-1.5">
                         ✅ จำได้แล้ว
                     </button>
-                    <button onclick="nextCard()" class="py-3 px-4 bg-white border border-slate-300 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 shadow-sm transition">
+                    <button onclick="nextCard()" class="min-h-[44px] py-3 px-2 sm:px-4 bg-white border border-slate-300 rounded-xl font-semibold text-sm sm:text-base text-slate-700 hover:bg-slate-50 shadow-sm transition">
                         คำถัดไป ➡️
                     </button>
                 </div>
 
-                <div class="flex justify-center gap-3 mt-4">
-                    <button onclick="shuffleCards()" class="text-xs px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg font-semibold transition">
+                <div class="flex flex-wrap justify-center gap-2 sm:gap-3 mt-4">
+                    <label class="text-xs flex items-center gap-1.5 text-slate-600 font-semibold">
+                        ความเร็วเสียง
+                        <select id="speechRate" onchange="setSpeechRate(this.value)" class="px-2 py-1.5 bg-slate-200 rounded-lg font-normal">
+                            <option value="0.60">ช้า</option>
+                            <option value="0.85" selected>ปกติ</option>
+                            <option value="1.05">เร็ว</option>
+                        </select>
+                    </label>
+                    <button onclick="shuffleCards()" class="min-h-[44px] text-xs px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg font-semibold transition">
                         🔀 สุ่มลำดับการ์ด
                     </button>
-                    <button onclick="resetProgress()" class="text-xs px-3 py-1.5 bg-slate-200 hover:bg-rose-100 hover:text-rose-700 text-slate-700 rounded-lg font-semibold transition">
+                    <button onclick="resetProgress()" class="min-h-[44px] text-xs px-3 py-2 bg-slate-200 hover:bg-rose-100 hover:text-rose-700 text-slate-700 rounded-lg font-semibold transition">
                         🔄 รีเซ็ตสถานะการจำทั้งหมด
                     </button>
                 </div>
@@ -157,7 +157,7 @@
                         ➕ เพิ่มคำศัพท์ใหม่
                     </button>
                     <button onclick="shareVocabText()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow-sm transition">
-                        📤 คัดลอกคำศัพท์ส่งให้เพื่อน
+                        📤 คัดลอกคำศัพท์
                     </button>
                     <button onclick="restoreDefaultVocab()" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-semibold rounded-lg transition">
                         คืนค่าเริ่มต้น
@@ -186,17 +186,20 @@
     </main>
 
     <!-- Edit/Add Modal -->
-    <div id="editModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+    <div id="editModal" class="fixed inset-0 overflow-y-auto bg-black/50 hidden items-start sm:items-center justify-center z-50 p-4">
+        <div class="my-auto max-h-[calc(100dvh-2rem)] overflow-y-auto bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-xl">
             <h3 id="modalTitle" class="text-lg font-bold text-slate-800 mb-4">แก้ไขคำศัพท์</h3>
             <input type="hidden" id="editId">
             <div class="space-y-3">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">บทเรียน</label>
-                    <select id="editChapter" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
-                        <option value="1">บทที่ 1 (หน้า 62-63)</option>
-                        <option value="2">บทที่ 2 (หน้า 69-70)</option>
-                    </select>
+                    <select id="editChapter" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></select>
+                    <div class="flex gap-2 mt-2">
+                        <input id="newLessonName" type="text" placeholder="ชื่อบทเรียนใหม่" aria-label="ชื่อบทเรียนใหม่" class="min-w-0 flex-1 border border-slate-300 rounded-lg px-3 py-1.5 text-xs">
+                        <button type="button" onclick="createLesson()" class="shrink-0 px-3 py-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg">
+                            ＋ สร้างบทเรียน
+                        </button>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">คำศัพท์ภาษาจีน (Hanzi)</label>
@@ -289,7 +292,21 @@
             { id: 230, chapter: 2, num: 30, hanzi: "项目", pinyin: "xiàngmù", eng: "project", thai: "โครงการ / โปรเจกต์", status: null }
         ];
 
-        let vocabList = JSON.parse(localStorage.getItem('bizChineseVocab_v1')) || JSON.parse(JSON.stringify(defaultVocab));
+        function loadStoredJSON(key, fallback) {
+            try {
+                const value = JSON.parse(localStorage.getItem(key));
+                return value ?? fallback;
+            } catch {
+                return fallback;
+            }
+        }
+
+        let vocabList = loadStoredJSON('bizChineseVocab_v1', JSON.parse(JSON.stringify(defaultVocab)));
+        let chapterNames = loadStoredJSON('bizChineseChapterNames_v1', {
+            1: 'นิทรรศการ',
+            2: 'อสังหาริมทรัพย์'
+        });
+        let speechRate = Number(loadStoredJSON('bizChineseSpeechRate_v1', 0.85));
         let currentChapter = 1;
         let currentFilter = 'all';
         let filteredDeck = [];
@@ -298,7 +315,59 @@
 
         function saveToStorage() {
             localStorage.setItem('bizChineseVocab_v1', JSON.stringify(vocabList));
+            localStorage.setItem('bizChineseChapterNames_v1', JSON.stringify(chapterNames));
             updateProgress();
+        }
+
+        function getChapters() {
+            return [...new Set([
+                ...Object.keys(chapterNames).map(Number),
+                ...vocabList.map(w => w.chapter)
+            ])].sort((a, b) => a - b);
+        }
+
+        function getChapterName(chapter) {
+            return chapterNames[chapter] || `บทเรียน ${chapter}`;
+        }
+
+        function populateChapterSelect(selectedChapter) {
+            const select = document.getElementById('editChapter');
+            select.innerHTML = '';
+            getChapters().forEach(chapter => {
+                const option = document.createElement('option');
+                option.value = chapter;
+                option.innerText = `บทที่ ${chapter}: ${getChapterName(chapter)}`;
+                select.appendChild(option);
+            });
+            if (selectedChapter !== undefined) select.value = selectedChapter;
+        }
+
+        function renderChapterControls() {
+            const tabs = document.getElementById('chapterTabs');
+            tabs.innerHTML = '';
+            const label = document.createElement('span');
+            label.className = 'shrink-0 text-sm font-semibold text-slate-500 mr-1';
+            label.innerText = 'เลือกบทเรียน:';
+            tabs.appendChild(label);
+
+            getChapters().forEach(chapter => {
+                const button = document.createElement('button');
+                button.innerText = `บทที่ ${chapter}: ${getChapterName(chapter)} (${vocabList.filter(w => w.chapter === chapter).length})`;
+                button.className = currentChapter === chapter
+                    ? 'shrink-0 px-3 py-1.5 rounded-lg text-sm font-semibold bg-indigo-600 text-white transition'
+                    : 'shrink-0 px-3 py-1.5 rounded-lg text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition';
+                button.onclick = () => setChapter(chapter);
+                tabs.appendChild(button);
+            });
+
+            const allButton = document.createElement('button');
+            allButton.innerText = `รวมทั้งหมด (${vocabList.length})`;
+            allButton.className = currentChapter === 'all'
+                ? 'shrink-0 px-3 py-1.5 rounded-lg text-sm font-semibold bg-indigo-600 text-white transition'
+                : 'shrink-0 px-3 py-1.5 rounded-lg text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition';
+            allButton.onclick = () => setChapter('all');
+            tabs.appendChild(allButton);
+            populateChapterSelect();
         }
 
         function switchMode(mode) {
@@ -310,27 +379,21 @@
             if (mode === 'flashcard') {
                 flashcardSec.classList.remove('hidden');
                 listSec.classList.add('hidden');
-                btnFlash.className = "px-3 py-1.5 rounded-lg text-sm font-semibold bg-white text-indigo-600 shadow-sm transition";
-                btnList.className = "px-3 py-1.5 rounded-lg text-sm font-semibold bg-indigo-700 text-white hover:bg-indigo-800 transition";
+                btnFlash.className = "flex-1 sm:flex-none px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-white text-indigo-600 shadow-sm transition";
+                btnList.className = "flex-1 sm:flex-none px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-indigo-700 text-white hover:bg-indigo-800 transition";
                 buildDeck();
             } else {
                 flashcardSec.classList.add('hidden');
                 listSec.classList.remove('hidden');
-                btnList.className = "px-3 py-1.5 rounded-lg text-sm font-semibold bg-white text-indigo-600 shadow-sm transition";
-                btnFlash.className = "px-3 py-1.5 rounded-lg text-sm font-semibold bg-indigo-700 text-white hover:bg-indigo-800 transition";
+                btnList.className = "flex-1 sm:flex-none px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-white text-indigo-600 shadow-sm transition";
+                btnFlash.className = "flex-1 sm:flex-none px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-indigo-700 text-white hover:bg-indigo-800 transition";
                 renderTable();
             }
         }
 
         function setChapter(ch) {
             currentChapter = ch;
-            ['1', '2', 'All'].forEach(c => {
-                const btn = document.getElementById('tabCh' + c);
-                const isSelected = (ch === 'all' && c === 'All') || (ch == c);
-                btn.className = isSelected
-                    ? "px-3 py-1.5 rounded-lg text-sm font-semibold bg-indigo-600 text-white transition"
-                    : "px-3 py-1.5 rounded-lg text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition";
-            });
+            renderChapterControls();
             buildDeck();
             renderTable();
             updateProgress();
@@ -351,14 +414,15 @@
             return vocabList.filter(w => currentChapter === 'all' ? true : w.chapter === currentChapter);
         }
 
-        function buildDeck() {
+        function buildDeck(preferredId) {
             const baseWords = getChapterWords();
             filteredDeck = baseWords.filter(w => {
                 if (currentFilter === 'memorized') return w.status === 'memorized';
                 if (currentFilter === 'unmemorized') return w.status !== 'memorized';
                 return true;
             });
-            currentIndex = 0;
+            const preferredIndex = filteredDeck.findIndex(w => w.id === preferredId);
+            currentIndex = preferredIndex >= 0 ? preferredIndex : Math.min(currentIndex, Math.max(filteredDeck.length - 1, 0));
             isFlipped = false;
             updateCardUI();
             updateProgress();
@@ -368,17 +432,14 @@
             const baseWords = getChapterWords();
             const total = baseWords.length;
             const memorizedCount = baseWords.filter(w => w.status === 'memorized').length;
+            const unmemorizedCount = baseWords.filter(w => w.status === 'unmemorized').length;
+            const newCount = baseWords.filter(w => w.status === null).length;
             const pct = total === 0 ? 0 : Math.round((memorizedCount / total) * 100);
 
-            document.getElementById('progressText').innerText = `จำได้แล้ว: ${memorizedCount} / ${total} คำ`;
+            document.getElementById('progressText').innerText = `จำได้ ${memorizedCount} • จำไม่ได้ ${unmemorizedCount} • ยังไม่ทบทวน ${newCount}`;
             document.getElementById('progressPercent').innerText = `${pct}%`;
             document.getElementById('progressBar').style.width = `${pct}%`;
 
-            const ch1Count = vocabList.filter(w => w.chapter === 1).length;
-            const ch2Count = vocabList.filter(w => w.chapter === 2).length;
-            document.getElementById('tabCh1').innerText = `บทที่ 1: นิทรรศการ (${ch1Count})`;
-            document.getElementById('tabCh2').innerText = `บทที่ 2: อสังหาริมทรัพย์ (${ch2Count})`;
-            document.getElementById('tabChAll').innerText = `รวมทั้งหมด (${vocabList.length})`;
         }
 
         function updateCardUI() {
@@ -448,7 +509,7 @@
                 saveToStorage();
             }
             if (currentFilter !== 'all') {
-                buildDeck();
+                buildDeck(currentWord.id);
             } else {
                 updateCardUI();
                 setTimeout(() => nextCard(), 250);
@@ -479,8 +540,23 @@
             window.speechSynthesis.cancel();
             const utter = new SpeechSynthesisUtterance(text);
             utter.lang = 'zh-CN';
-            utter.rate = 0.85;
+            utter.rate = speechRate;
             window.speechSynthesis.speak(utter);
+        }
+
+        function setSpeechRate(rate) {
+            speechRate = Number(rate);
+            localStorage.setItem('bizChineseSpeechRate_v1', speechRate);
+        }
+
+        function escapeHTML(value) {
+            return String(value).replace(/[&<>"']/g, character => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[character]);
         }
 
         function speakCurrentWord(e) {
@@ -507,14 +583,14 @@
                     <td class="py-3 px-4 text-slate-400 font-medium">${w.chapter}.${w.num}</td>
                     <td class="py-3 px-4">
                         <div class="flex items-center gap-2">
-                            <span class="chinese-text text-lg font-bold text-slate-800">${w.hanzi}</span>
-                            <button onclick="speakText('${w.hanzi}')" class="text-indigo-500 hover:text-indigo-700 text-xs bg-indigo-50 px-2 py-0.5 rounded">🔊</button>
+                            <span class="chinese-text text-lg font-bold text-slate-800">${escapeHTML(w.hanzi)}</span>
+                            <button onclick="speakText(${escapeHTML(JSON.stringify(w.hanzi))})" class="text-indigo-500 hover:text-indigo-700 text-xs bg-indigo-50 px-2 py-0.5 rounded">🔊</button>
                         </div>
                     </td>
-                    <td class="py-3 px-4 text-indigo-600 font-medium">${w.pinyin}</td>
+                    <td class="py-3 px-4 text-indigo-600 font-medium">${escapeHTML(w.pinyin)}</td>
                     <td class="py-3 px-4">
-                        <div class="font-semibold text-slate-800">${w.thai}</div>
-                        <div class="text-xs text-slate-500">${w.eng}</div>
+                        <div class="font-semibold text-slate-800">${escapeHTML(w.thai)}</div>
+                        <div class="text-xs text-slate-500">${escapeHTML(w.eng)}</div>
                     </td>
                     <td class="py-3 px-4 text-center">
                         <button onclick="toggleStatusInTable(${w.id})" class="px-2.5 py-1 rounded-full text-xs font-semibold ${
@@ -543,6 +619,7 @@
         function openEditModal(id) {
             const word = vocabList.find(w => w.id === id);
             if (!word) return;
+            populateChapterSelect(word.chapter);
             document.getElementById('modalTitle').innerText = 'แก้ไขคำศัพท์';
             document.getElementById('editId').value = word.id;
             document.getElementById('editChapter').value = word.chapter;
@@ -557,13 +634,29 @@
         function openAddModal() {
             document.getElementById('modalTitle').innerText = 'เพิ่มคำศัพท์ใหม่';
             document.getElementById('editId').value = '';
-            document.getElementById('editChapter').value = currentChapter === 'all' ? 1 : currentChapter;
+            populateChapterSelect(currentChapter === 'all' ? getChapters()[0] : currentChapter);
             document.getElementById('editHanzi').value = '';
             document.getElementById('editPinyin').value = '';
             document.getElementById('editEng').value = '';
             document.getElementById('editThai').value = '';
             document.getElementById('editModal').classList.remove('hidden');
             document.getElementById('editModal').classList.add('flex');
+        }
+
+        function createLesson() {
+            const input = document.getElementById('newLessonName');
+            const name = input.value.trim();
+            if (!name) {
+                input.focus();
+                return;
+            }
+            const chapters = getChapters();
+            const chapter = chapters.length ? Math.max(...chapters) + 1 : 1;
+            chapterNames[chapter] = name;
+            saveToStorage();
+            renderChapterControls();
+            document.getElementById('editChapter').value = chapter;
+            input.value = '';
         }
 
         function closeModal() {
@@ -595,7 +688,7 @@
                 }
             } else {
                 const chWords = vocabList.filter(w => w.chapter === chapter);
-                const nextNum = chWords.length + 1;
+                const nextNum = chWords.length ? Math.max(...chWords.map(w => w.num)) + 1 : 1;
                 vocabList.push({
                     id: Date.now(),
                     chapter,
@@ -624,7 +717,9 @@
         function restoreDefaultVocab() {
             if (!confirm('คืนค่าคำศัพท์เริ่มต้นทั้ง 60 คำ (ข้อมูลที่แก้ไขเพิ่มเติมจะถูกล้าง) ยืนยันหรือไม่?')) return;
             vocabList = JSON.parse(JSON.stringify(defaultVocab));
+            chapterNames = { 1: 'นิทรรศการ', 2: 'อสังหาริมทรัพย์' };
             saveToStorage();
+            renderChapterControls();
             renderTable();
             buildDeck();
         }
@@ -635,12 +730,31 @@
             words.forEach(w => {
                 text += `${w.num}. ${w.hanzi} (${w.pinyin}) = ${w.thai} [${w.eng}]\n`;
             });
-            navigator.clipboard.writeText(text).then(() => {
-                alert('คัดลอกรายการคำศัพท์ลงในคลิปบอร์ดแล้ว! สามารถกดวาง (Paste) ส่งให้เพื่อนใน Line หรือแชทได้เลย');
-            });
+            // navigator.clipboard.writeText(text).then(() => {
+            //     alert('คัดลอกรายการคำศัพท์ลงในคลิปบอร์ดแล้ว! สามารถกดวาง (Paste) ส่งให้เพื่อนใน Line หรือแชทได้เลย');
+            // });
         }
 
+        document.getElementById('speechRate').value = speechRate;
+        document.addEventListener('keydown', event => {
+            if (event.target.matches('input, select, textarea')) return;
+            if (event.key === ' ') {
+                event.preventDefault();
+                flipCard();
+            } else if (event.key === 'ArrowLeft') {
+                prevCard();
+            } else if (event.key === 'ArrowRight') {
+                nextCard();
+            } 
+            // else if (event.key === '1') {
+            //     markWord(false);
+            // } else if (event.key === '2') {
+            //     markWord(true);
+            // }
+        });
+
         // Initialize
+        renderChapterControls();
         buildDeck();
     </script>
 </body>
