@@ -88,7 +88,7 @@
                 <div class="perspective w-full h-80 md:h-96 cursor-pointer mb-6" onclick="flipCard()">
                     <div id="cardInner" class="relative w-full h-full transition-transform duration-500 transform-style-3d">
                         <!-- Front -->
-                        <div class="absolute inset-0 bg-white rounded-2xl shadow-md border border-slate-200 p-6 flex flex-col justify-between items-center backface-hidden">
+                        <div class="absolute inset-0 bg-white rounded-2xl shadow-md border border-slate-300 p-6 flex flex-col justify-between items-center backface-hidden">
                             <div class="w-full flex justify-between items-center text-xs text-slate-400">
                                 <span id="cardFrontChapter">บทที่ 1</span>
                                 <span>คลิกที่การ์ดเพื่อพลิกดูความหมาย 👆</span>
@@ -109,10 +109,10 @@
                                 <button onclick="speakCurrentWord(event)" class="px-2.5 py-1 rounded-md bg-white text-indigo-600 shadow-sm text-xs font-semibold">🔊 ฟังเสียง</button>
                             </div>
                             <div class="text-center my-auto space-y-3">
-                                <p id="cardPinyin" class="text-2xl md:text-3xl font-bold text-indigo-600">jiǎnglì lǚxíng</p>
+                                <p id="cardPinyin" class="text-2xl md:text-3xl font-bold text-indigo-600">jiǎnglì lǔxíng</p>
                                 <hr class="border-indigo-200 w-24 mx-auto">
                                 <p id="cardThai" class="text-xl md:text-2xl font-bold text-slate-800">การท่องเที่ยวเพื่อเป็นรางวัล</p>
-                                <p id="cardEng" class="text-sm md:text-base text-slate-500 font-medium">incentive travel</p>
+                                <p id="cardEng" class="text-base md:text-base text-slate-500 font-medium">incentive travel</p>
                             </div>
                             <div class="text-xs text-indigo-400">คลิกเพื่อพลิกกลับด้านหน้า</div>
                         </div>
@@ -225,7 +225,7 @@
     <script>
         const defaultVocab = [
             // บทที่ 1 (หน้า 62-63)
-            { id: 101, chapter: 1, num: 1, hanzi: "奖励旅行", pinyin: "jiǎnglì lǚxíng", eng: "incentive travel", thai: "การท่องเที่ยวเพื่อเป็นรางวัล", status: null },
+            { id: 101, chapter: 1, num: 1, hanzi: "奖励旅行", pinyin: "jiǎnglì lǔxíng", eng: "incentive travel", thai: "การท่องเที่ยวเพื่อเป็นรางวัล", status: null },
             { id: 102, chapter: 1, num: 2, hanzi: "交易会", pinyin: "jiāoyìhuì", eng: "trade fair / trade exhibition", thai: "งานแสดงสินค้า / งานเทรดแฟร์", status: null },
             { id: 103, chapter: 1, num: 3, hanzi: "地域", pinyin: "dìyù", eng: "area; region", thai: "พื้นที่ / ภูมิภาค", status: null },
             { id: 104, chapter: 1, num: 4, hanzi: "传递", pinyin: "chuándì", eng: "transfer", thai: "ส่งต่อ / ถ่ายทอด", status: null },
