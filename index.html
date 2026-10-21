@@ -225,6 +225,8 @@
         </div>
     </div>
 
+    <div id="toast" role="status" aria-live="polite" class="fixed bottom-4 left-1/2 z-50 hidden max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-lg bg-emerald-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-lg"></div>
+
     <script>
         const defaultVocab = [
             // บทที่ 1 (หน้า 62-63)
@@ -588,9 +590,9 @@
                         </div>
                     </td>
                     <td class="py-3 px-4 text-indigo-600 font-medium">${escapeHTML(w.pinyin)}</td>
-                    <td class="py-3 px-4">
-                        <div class="font-semibold text-slate-800">${escapeHTML(w.thai)}</div>
-                        <div class="text-xs text-slate-500">${escapeHTML(w.eng)}</div>
+                    <td class="py-3 px-4">                       
+                        <div class="font-semibold text-slate-800">${escapeHTML(w.eng)}</div>
+                        <div class="text-xs text-slate-500">${escapeHTML(w.thai)}</div>
                     </td>
                     <td class="py-3 px-4 text-center">
                         <button onclick="toggleStatusInTable(${w.id})" class="px-2.5 py-1 rounded-full text-xs font-semibold ${
@@ -724,15 +726,30 @@
             buildDeck();
         }
 
-        function shareVocabText() {
+        let toastTimeout;
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.toggle('bg-red-500', isError);
+            toast.classList.toggle('bg-emerald-500', !isError);
+            toast.classList.remove('hidden');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        async function shareVocabText() {
             const words = getChapterWords();
             let text = `📚 คำศัพท์ภาษาจีนธุรกิจ (${currentChapter === 'all' ? 'ทั้งหมด' : 'บทที่ ' + currentChapter})\n\n`;
             words.forEach(w => {
                 text += `${w.num}. ${w.hanzi} (${w.pinyin}) = ${w.thai} [${w.eng}]\n`;
             });
-            // navigator.clipboard.writeText(text).then(() => {
-            //     alert('คัดลอกรายการคำศัพท์ลงในคลิปบอร์ดแล้ว! สามารถกดวาง (Paste) ส่งให้เพื่อนใน Line หรือแชทได้เลย');
-            // });
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast('คัดลอกรายการคำศัพท์แล้ว');
+            } catch {
+                showToast('คัดลอกไม่สำเร็จ กรุณาตรวจสอบสิทธิ์คลิปบอร์ด', true);
+            }
         }
 
         document.getElementById('speechRate').value = speechRate;
