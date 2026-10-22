@@ -5,774 +5,269 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>คลังคำศัพท์ภาษาจีนธุรกิจ (Business Chinese Flashcards)</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Sarabun', 'Noto Sans SC', sans-serif; }
-        .chinese-text { font-family: 'Noto Sans SC', sans-serif; }
-        .perspective { perspective: 1000px; }
-        .transform-style-3d { transform-style: preserve-3d; }
-        .backface-hidden { backface-visibility: hidden; }
-        .rotate-y-180 { transform: rotateY(180deg); }
-        button, select, input { touch-action: manipulation; }
-    </style>
+    <link rel="stylesheet" href="css/styles.css">
+    <script type="module" src="js/main.js"></script>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 pb-12">
 
-    <!-- Navbar -->
+    <!-- ===== Header ===== -->
     <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-30">
         <div class="max-w-4xl mx-auto px-3 sm:px-4 py-3 flex flex-col sm:flex-row sm:flex-wrap justify-between items-stretch sm:items-center gap-2">
             <h1 class="text-lg md:text-xl font-bold flex items-center gap-2">
-                <span>📚</span> Business Chinese 1
+                <span data-icon="book-open" class="w-6 h-6"></span> Business Chinese 1
             </h1>
-            <div class="flex w-full sm:w-auto gap-2">
-                <button onclick="switchMode('flashcard')" id="btnModeFlashcard" class="flex-1 sm:flex-none px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-white text-indigo-600 shadow-sm transition">
-                    🗂️ โหมดการ์ดคำศัพท์
+            <nav class="flex w-full sm:w-auto gap-2" aria-label="สลับโหมด">
+                <button type="button" id="btnModeFlashcard" data-action="switch-mode" data-mode="flashcard"
+                    class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition bg-white text-indigo-600 shadow-sm">
+                    <span data-icon="rectangle-stack" class="w-4 h-4 sm:w-5 sm:h-5"></span> โหมดการ์ดคำศัพท์
                 </button>
-                <button onclick="switchMode('list')" id="btnModeList" class="flex-1 sm:flex-none px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-indigo-700 text-white hover:bg-indigo-800 transition">
-                    📝 ดู/แก้ไขคลังคำศัพท์
+                <button type="button" id="btnModeList" data-action="switch-mode" data-mode="list"
+                    class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition bg-indigo-700 text-white hover:bg-indigo-800">
+                    <span data-icon="pencil-square" class="w-4 h-4 sm:w-5 sm:h-5"></span> ดู/แก้ไขคลังคำศัพท์
                 </button>
-            </div>
+            </nav>
         </div>
     </header>
 
     <main class="max-w-4xl mx-auto px-3 sm:px-4 mt-4 sm:mt-6">
-        <!-- Chapter & Filter Controls -->
-        <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm mb-4 sm:mb-6 flex flex-col sm:flex-row sm:flex-wrap justify-between items-stretch sm:items-center gap-3 sm:gap-4">
-            <div id="chapterTabs" class="flex w-full sm:flex-1 items-center gap-2 overflow-x-auto whitespace-nowrap pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
-                <span class="text-sm font-semibold text-slate-500 mr-1">เลือกบทเรียน:</span>
-            </div>
 
-            <div class="w-full sm:w-auto">
-                <select id="statusFilter" onchange="applyFilter()" class="w-full sm:w-auto bg-slate-50 border border-slate-300 text-slate-700 text-sm rounded-lg px-3 py-2 sm:py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <option value="all">แสดงทั้งหมด</option>
-                    <option value="unmemorized">❌ เฉพาะคำที่ยังจำไม่ได้</option>
-                    <option value="memorized">✅ เฉพาะคำที่จำได้แล้ว</option>
-                </select>
-            </div>
+        <!-- ===== Loading / Error ===== -->
+        <div id="appStatus" class="bg-white p-8 rounded-xl shadow-sm text-center text-slate-500">
+            <span data-icon="arrow-path" class="block mx-auto mb-3 w-8 h-8 animate-spin text-indigo-500"></span>
+            <p class="font-semibold">กำลังโหลดคลังคำศัพท์...</p>
+            <p class="text-xs mt-2 text-slate-400">ถ้าค้างอยู่ที่หน้านี้ อาจเป็นเพราะเปิดไฟล์ตรงจากเครื่อง (file://) ให้เปิดผ่าน local server แทน</p>
         </div>
 
-        <!-- Progress Bar -->
-        <div class="bg-white px-4 py-3 rounded-xl shadow-sm mb-6">
-            <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1.5">
-                <span id="progressText">จำได้แล้ว: 0 / 30 คำ</span>
-                <span id="progressPercent">0%</span>
-            </div>
-            <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
-                <div id="progressBar" class="bg-emerald-500 h-2.5 transition-all duration-300" style="width: 0%"></div>
-            </div>
-        </div>
+        <div id="appContent" class="hidden">
+            <!-- ===== Chapter & Filter ===== -->
+            <section class="bg-white p-3 sm:p-4 rounded-xl shadow-sm mb-4 sm:mb-6 flex flex-col sm:flex-row sm:flex-wrap justify-between items-stretch sm:items-center gap-3 sm:gap-4">
+                <div id="chapterTabs" class="flex w-full sm:flex-1 items-center gap-2 overflow-x-auto whitespace-nowrap pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0"></div>
 
-        <!-- FLASHCARD MODE -->
-        <div id="flashcardSection" class="block">
-            <div id="emptyFlashcardState" class="hidden bg-white p-12 rounded-2xl shadow-sm text-center">
-                <p class="text-lg text-slate-500 mb-4">ไม่มีคำศัพท์ในหมวดหมู่ที่เลือก 🎉</p>
-                <button onclick="resetFilter()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold">แสดงคำศัพท์ทั้งหมด</button>
-            </div>
+                <div class="relative w-full sm:w-auto">
+                    <span data-icon="funnel" class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></span>
+                    <select id="statusFilter" aria-label="กรองตามสถานะการจำ" class="w-full sm:w-auto bg-slate-50 border border-slate-300 text-slate-700 text-sm rounded-lg pl-8 pr-3 py-2 sm:py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="all">แสดงทั้งหมด</option>
+                        <option value="unmemorized">เฉพาะคำที่ยังจำไม่ได้</option>
+                        <option value="memorized">เฉพาะคำที่จำได้แล้ว</option>
+                    </select>
+                </div>
+            </section>
 
-            <div id="flashcardContainer">
-                <!-- Card Counter -->
-                <div class="flex justify-between items-center mb-3 px-1">
-                    <span id="cardIndexText" class="text-sm font-semibold text-slate-500">คำที่ 1 จาก 30</span>
-                    <span id="cardStatusBadge" class="text-xs px-2.5 py-1 rounded-full font-semibold bg-slate-200 text-slate-600">ยังไม่ได้ประเมิน</span>
+            <!-- ===== Progress ===== -->
+            <section class="bg-white px-4 py-3 rounded-xl shadow-sm mb-6">
+                <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1.5">
+                    <span id="progressText"></span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div id="progressTrack" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                    <div id="progressBar" class="bg-emerald-500 h-2.5 transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </section>
+
+            <!-- ===== FLASHCARD MODE ===== -->
+            <section id="flashcardSection">
+                <div id="emptyFlashcardState" class="hidden bg-white p-12 rounded-2xl shadow-sm text-center">
+                    <span data-icon="sparkles" class="block mx-auto mb-3 w-12 h-12 text-indigo-400"></span>
+                    <p class="text-lg text-slate-500 mb-4">ไม่มีคำศัพท์ในหมวดหมู่ที่เลือก</p>
+                    <button type="button" data-action="reset-filter" class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold">
+                        <span data-icon="rectangle-stack" class="w-4 h-4"></span> แสดงคำศัพท์ทั้งหมด
+                    </button>
                 </div>
 
-                <!-- 3D Flip Card -->
-                <div class="perspective w-full h-[min(65vh,32rem)] min-h-[22rem] md:h-96 cursor-pointer mb-4 sm:mb-6" onclick="flipCard()">
-                    <div id="cardInner" class="relative w-full h-full transition-transform duration-500 transform-style-3d">
-                        <!-- Front -->
-                        <div class="absolute inset-0 overflow-y-auto bg-white rounded-2xl shadow-md border border-slate-300 p-4 sm:p-6 flex flex-col justify-between items-center backface-hidden">
-                            <div class="w-full flex justify-between items-center text-xs text-slate-400">
-                                <span id="cardFrontChapter">บทที่ 1</span>
-                                <span>คลิกที่การ์ดเพื่อพลิกดูความหมาย 👆</span>
-                            </div>
-                            <div class="text-center my-auto">
-                                <h2 id="cardHanzi" class="chinese-text text-5xl md:text-6xl font-bold text-slate-800 mb-4">奖励旅行</h2>
-                                <button onclick="speakCurrentWord(event)" class="mt-2 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 text-sm font-medium transition">
-                                    🔊 ฟังเสียงอ่าน
-                                </button>
-                            </div>
-                            <div class="text-xs text-slate-400">ด้านหน้า (ภาษาจีน)</div>
-                        </div>
+                <div id="flashcardContainer">
+                    <div class="flex justify-between items-center mb-3 px-1">
+                        <span id="cardIndexText" class="text-sm font-semibold text-slate-500"></span>
+                        <span id="cardStatusBadge"></span>
+                    </div>
 
-                        <!-- Back -->
-                        <div class="absolute inset-0 overflow-y-auto bg-indigo-50 rounded-2xl shadow-md border border-indigo-200 p-4 sm:p-6 flex flex-col justify-between items-center backface-hidden rotate-y-180">
-                            <div class="w-full flex justify-between items-center text-xs text-indigo-400">
-                                <span id="cardBackHanzi" class="chinese-text font-semibold text-base text-indigo-700">奖励旅行</span>
-                                <button onclick="speakCurrentWord(event)" class="px-2.5 py-1 rounded-md bg-white text-indigo-600 shadow-sm text-xs font-semibold">🔊 ฟังเสียง</button>
+                    <!-- 3D Flip Card -->
+                    <div data-action="flip" class="perspective w-full h-[min(65vh,32rem)] min-h-[22rem] md:h-96 cursor-pointer mb-4 sm:mb-6">
+                        <div id="cardInner" class="relative w-full h-full transition-transform duration-500 transform-style-3d">
+                            <!-- Front -->
+                            <div class="absolute inset-0 overflow-y-auto bg-white rounded-2xl shadow-md border border-slate-300 p-4 sm:p-6 flex flex-col justify-between items-center backface-hidden">
+                                <div class="w-full flex justify-between items-center gap-2 text-xs text-slate-400">
+                                    <span id="cardFrontChapter"></span>
+                                    <span class="inline-flex items-center gap-1 text-right">
+                                        <span data-icon="cursor-arrow-rays" class="w-4 h-4"></span> แตะการ์ดเพื่อพลิกดูความหมาย
+                                    </span>
+                                </div>
+                                <div class="text-center my-auto">
+                                    <h2 id="cardHanzi" class="chinese-text text-5xl md:text-6xl font-bold text-slate-800 mb-4"></h2>
+                                    <button type="button" data-action="speak-current" class="mt-2 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 text-sm font-medium transition">
+                                        <span data-icon="speaker-wave" class="w-5 h-5"></span> ฟังเสียงอ่าน
+                                    </button>
+                                </div>
+                                <div class="text-xs text-slate-400">ด้านหน้า (ภาษาจีน)</div>
                             </div>
-                            <div class="text-center my-auto space-y-3">
-                                <p id="cardPinyin" class="text-2xl md:text-3xl font-bold text-indigo-600">jiǎnglì lǔxíng</p>
-                                <hr class="border-indigo-200 w-24 mx-auto">
-                                <p id="cardThai" class="text-xl md:text-2xl font-bold text-slate-800">การท่องเที่ยวเพื่อเป็นรางวัล</p>
-                                <p id="cardEng" class="text-xl md:text-2xl text-slate-500 font-medium">incentive travel</p>
+
+                            <!-- Back -->
+                            <div class="absolute inset-0 overflow-y-auto bg-indigo-50 rounded-2xl shadow-md border border-indigo-200 p-4 sm:p-6 flex flex-col justify-between items-center backface-hidden rotate-y-180">
+                                <div class="w-full flex justify-between items-center text-xs text-indigo-400">
+                                    <span id="cardBackHanzi" class="chinese-text font-semibold text-base text-indigo-700"></span>
+                                    <button type="button" data-action="speak-current" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white text-indigo-600 shadow-sm text-xs font-semibold">
+                                        <span data-icon="speaker-wave" class="w-4 h-4"></span> ฟังเสียง
+                                    </button>
+                                </div>
+                                <div class="text-center my-auto space-y-3">
+                                    <p id="cardPinyin" class="text-2xl md:text-3xl font-bold text-indigo-600"></p>
+                                    <hr class="border-indigo-200 w-24 mx-auto">
+                                    <p id="cardThai" class="text-xl md:text-2xl font-bold text-slate-800"></p>
+                                    <p id="cardEng" class="text-xl md:text-2xl text-slate-500 font-medium"></p>
+                                </div>
+                                <div class="text-xs text-indigo-400">แตะเพื่อพลิกกลับด้านหน้า</div>
                             </div>
-                            <div class="text-xs text-indigo-400">คลิกเพื่อพลิกกลับด้านหน้า</div>
                         </div>
+                    </div>
+
+                    <!-- 4 Action buttons: แถวเดียวทุกขนาดจอ -->
+                    <div class="grid grid-cols-4 gap-2 sm:gap-3 mb-4">
+                        <button type="button" data-action="prev" aria-label="คำก่อนหน้า" title="คำก่อนหน้า" class="min-h-[56px] sm:min-h-[48px] flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-1 sm:px-4 bg-white border border-slate-300 rounded-xl text-slate-700 hover:bg-slate-50  active:scale-95 shadow-sm transition">
+                            <span data-icon="backward" class="w-6 h-6"></span>
+                            <span class="text-[11px] sm:text-sm font-semibold leading-tight whitespace-nowrap">ก่อนหน้า</span>
+                        </button>
+                        <button type="button" data-action="mark-unmemorized" aria-label="จำไม่ได้" title="จำไม่ได้" class="min-h-[56px] sm:min-h-[48px] flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-1 sm:px-4 bg-rose-500 hover:bg-rose-700 text-white rounded-xl active:scale-95 shadow-sm transition">
+                            <span data-icon="x-circle" class="w-6 h-6"></span>
+                            <span class="text-[11px] sm:text-sm font-semibold leading-tight whitespace-nowrap">จำไม่ได้</span>
+                        </button>
+                        <button type="button" data-action="mark-memorized" aria-label="จำได้แล้ว" title="จำได้แล้ว" class="min-h-[56px] sm:min-h-[48px] flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-1 sm:px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl active:scale-95 shadow-sm transition">
+                            <span data-icon="check-circle" class="w-6 h-6"></span>
+                            <span class="text-[11px] sm:text-sm font-semibold leading-tight whitespace-nowrap">จำได้แล้ว</span>
+                        </button>
+                        <button type="button" data-action="next" aria-label="คำถัดไป" title="คำถัดไป" class="min-h-[56px] sm:min-h-[48px] flex flex-col sm:flex-row-reverse items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-1 sm:px-4 bg-white border border-slate-300 rounded-xl text-slate-700 hover:bg-slate-50 active:scale-95 shadow-sm transition">
+                            <span data-icon="forward" class="w-6 h-6"></span>
+                            <span class="text-[11px] sm:text-sm font-semibold leading-tight whitespace-nowrap">ถัดไป</span>
+                        </button>
+                    </div>
+
+                    <div class="flex flex-wrap justify-center items-center gap-2 sm:gap-3 mt-4">
+                        <label class="text-xs flex items-center gap-1.5 text-slate-600 font-semibold">
+                            <span data-icon="speaker-wave" class="w-4 h-4"></span> ความเร็วเสียง
+                            <select id="speechRate" class="px-2 py-1.5 bg-slate-200 rounded-lg font-normal">
+                                <option value="0.6">ช้า</option>
+                                <option value="0.85">ปกติ</option>
+                                <option value="1.05">เร็ว</option>
+                            </select>
+                        </label>
+                        <button type="button" data-action="shuffle" class="min-h-[44px] inline-flex items-center gap-1.5 text-xs px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg font-semibold transition">
+                            <span data-icon="arrows-right-left" class="w-4 h-4"></span> สุ่มลำดับการ์ด
+                        </button>
+                        <button type="button" data-action="reset-progress" class="min-h-[44px] inline-flex items-center gap-1.5 text-xs px-3 py-2 bg-slate-200 hover:bg-rose-100 hover:text-rose-700 text-slate-700 rounded-lg font-semibold transition">
+                            <span data-icon="arrow-path" class="w-4 h-4"></span> รีเซ็ตสถานะการจำทั้งหมด
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== LIST MODE ===== -->
+            <section id="listSection" class="hidden">
+                <div class="bg-white p-4 rounded-xl shadow-sm mb-4 flex flex-wrap justify-between items-center gap-3">
+                    <div class="relative flex-1 min-w-[200px]">
+                        <span data-icon="magnifying-glass" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></span>
+                        <input type="search" id="searchInput" placeholder="ค้นหาคำศัพท์ พินอิน หรือความหมาย..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" data-action="add-word" class="inline-flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition">
+                            <span data-icon="plus" class="w-4 h-4"></span> เพิ่มคำศัพท์ใหม่
+                        </button>
+                        <button type="button" data-action="copy-vocab" class="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow-sm transition">
+                            <span data-icon="document-duplicate" class="w-4 h-4"></span> คัดลอกคำศัพท์
+                        </button>
+                        <button type="button" data-action="restore-defaults" class="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-semibold rounded-lg transition">
+                            <span data-icon="arrow-uturn-left" class="w-4 h-4"></span> คืนค่าเริ่มต้น
+                        </button>
                     </div>
                 </div>
 
-                <!-- Controls -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-4">
-                    <button onclick="prevCard()" class="min-h-[44px] py-3 px-2 sm:px-4 bg-white border border-slate-300 rounded-xl font-semibold text-sm sm:text-base text-slate-700 hover:bg-slate-50 shadow-sm transition">
-                        ⬅️ คำก่อนหน้า
-                    </button>
-                    <button onclick="markWord(false)" class="min-h-[44px] py-3 px-2 sm:px-4 bg-rose-500 hover:bg-rose-600 text-sm sm:text-base text-white rounded-xl font-semibold shadow-sm transition flex items-center justify-center gap-1.5">
-                        จำไม่ได้
-                    </button>
-                    <button onclick="markWord(true)" class="min-h-[44px] py-3 px-2 sm:px-4 bg-emerald-500 hover:bg-emerald-600 text-sm sm:text-base text-white rounded-xl font-semibold shadow-sm transition flex items-center justify-center gap-1.5">
-                        จำได้แล้ว
-                    </button>
-                    <button onclick="nextCard()" class="min-h-[44px] py-3 px-2 sm:px-4 bg-white border border-slate-300 rounded-xl font-semibold text-sm sm:text-base text-slate-700 hover:bg-slate-50 shadow-sm transition">
-                        คำถัดไป ➡️
-                    </button>
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500 font-semibold">
+                                    <th class="py-3 px-4">#</th>
+                                    <th class="py-3 px-4">คำศัพท์ (จีน)</th>
+                                    <th class="py-3 px-4">พินอิน (Pinyin)</th>
+                                    <th class="py-3 px-4">ความหมาย (อังกฤษ / ไทย)</th>
+                                    <th class="py-3 px-4 text-center">สถานะ</th>
+                                    <th class="py-3 px-4 text-right">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vocabTableBody" class="divide-y divide-slate-200 text-sm"></tbody>
+                        </table>
+                    </div>
                 </div>
-
-                <div class="flex flex-wrap justify-center gap-2 sm:gap-3 mt-4">
-                    <label class="text-xs flex items-center gap-1.5 text-slate-600 font-semibold">
-                        ความเร็วเสียง
-                        <select id="speechRate" onchange="setSpeechRate(this.value)" class="px-2 py-1.5 bg-slate-200 rounded-lg font-normal">
-                            <option value="0.60">ช้า</option>
-                            <option value="0.85" selected>ปกติ</option>
-                            <option value="1.05">เร็ว</option>
-                        </select>
-                    </label>
-                    <button onclick="shuffleCards()" class="min-h-[44px] text-xs px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg font-semibold transition">
-                        🔀 สุ่มลำดับการ์ด
-                    </button>
-                    <button onclick="resetProgress()" class="min-h-[44px] text-xs px-3 py-2 bg-slate-200 hover:bg-rose-100 hover:text-rose-700 text-slate-700 rounded-lg font-semibold transition">
-                        🔄 รีเซ็ตสถานะการจำทั้งหมด
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- VOCABULARY LIST & EDIT MODE -->
-        <div id="listSection" class="hidden">
-            <div class="bg-white p-4 rounded-xl shadow-sm mb-4 flex flex-wrap justify-between items-center gap-3">
-                <div class="flex-1 min-w-[200px]">
-                    <input type="text" id="searchInput" oninput="renderTable()" placeholder="🔍 ค้นหาคำศัพท์ พินอิน หรือความหมาย..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="flex flex-wrap gap-2">
-                    <button onclick="openAddModal()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition">
-                        ➕ เพิ่มคำศัพท์ใหม่
-                    </button>
-                    <button onclick="shareVocabText()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow-sm transition">
-                        📤 คัดลอกคำศัพท์
-                    </button>
-                    <button onclick="restoreDefaultVocab()" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-semibold rounded-lg transition">
-                        คืนค่าเริ่มต้น
-                    </button>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500 font-semibold">
-                                <th class="py-3 px-4">#</th>
-                                <th class="py-3 px-4">คำศัพท์ (จีน)</th>
-                                <th class="py-3 px-4">พินอิน (Pinyin)</th>
-                                <th class="py-3 px-4">ความหมาย (อังกฤษ / ไทย)</th>
-                                <th class="py-3 px-4 text-center">สถานะ</th>
-                                <th class="py-3 px-4 text-right">จัดการ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="vocabTableBody" class="divide-y divide-slate-200 text-sm"></tbody>
-                    </table>
-                </div>
-            </div>
+            </section>
         </div>
     </main>
 
-    <!-- Edit/Add Modal -->
-    <div id="editModal" class="fixed inset-0 overflow-y-auto bg-black/50 hidden items-start sm:items-center justify-center z-50 p-4">
-        <div class="my-auto max-h-[calc(100dvh-2rem)] overflow-y-auto bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-xl">
-            <h3 id="modalTitle" class="text-lg font-bold text-slate-800 mb-4">แก้ไขคำศัพท์</h3>
+    <!-- ===== Add/Edit Modal ===== -->
+    <div id="editModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" class="fixed inset-0 overflow-y-auto bg-black/50 hidden items-start sm:items-center justify-center z-50 p-4">
+        <form id="editForm" novalidate class="my-auto max-h-[calc(100dvh-2rem)] overflow-y-auto bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 id="modalTitle" class="text-lg font-bold text-slate-800">แก้ไขคำศัพท์</h3>
+                <button type="button" data-action="close-modal" aria-label="ปิด" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition">
+                    <span data-icon="x-mark" class="w-5 h-5"></span>
+                </button>
+            </div>
             <input type="hidden" id="editId">
             <div class="space-y-3">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">บทเรียน</label>
+                    <label for="editChapter" class="block text-xs font-semibold text-slate-600 mb-1">บทเรียน</label>
                     <select id="editChapter" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></select>
                     <div class="flex gap-2 mt-2">
                         <input id="newLessonName" type="text" placeholder="ชื่อบทเรียนใหม่" aria-label="ชื่อบทเรียนใหม่" class="min-w-0 flex-1 border border-slate-300 rounded-lg px-3 py-1.5 text-xs">
-                        <button type="button" onclick="createLesson()" class="shrink-0 px-3 py-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg">
-                            ＋ สร้างบทเรียน
+                        <button type="button" data-action="create-lesson" class="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg">
+                            <span data-icon="folder-plus" class="w-4 h-4"></span> สร้างบทเรียน
                         </button>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">คำศัพท์ภาษาจีน (Hanzi)</label>
+                    <label for="editHanzi" class="block text-xs font-semibold text-slate-600 mb-1">คำศัพท์ภาษาจีน (Hanzi)</label>
                     <input type="text" id="editHanzi" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm chinese-text">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">พินอิน (Pinyin)</label>
+                    <label for="editPinyin" class="block text-xs font-semibold text-slate-600 mb-1">พินอิน (Pinyin)</label>
                     <input type="text" id="editPinyin" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">ความหมายภาษาอังกฤษ</label>
+                    <label for="editEng" class="block text-xs font-semibold text-slate-600 mb-1">ความหมายภาษาอังกฤษ</label>
                     <input type="text" id="editEng" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">ความหมายภาษาไทย</label>
+                    <label for="editThai" class="block text-xs font-semibold text-slate-600 mb-1">ความหมายภาษาไทย</label>
                     <input type="text" id="editThai" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
                 </div>
             </div>
             <div class="flex justify-end gap-2 mt-6">
-                <button onclick="closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-semibold">ยกเลิก</button>
-                <button onclick="saveWord()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold">บันทึก</button>
+                <button type="button" data-action="close-modal" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-semibold">ยกเลิก</button>
+                <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold">
+                    <span data-icon="check-circle" class="w-4 h-4"></span> บันทึก
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ===== Confirmation Modal ===== -->
+    <div id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage" class="fixed inset-0 hidden items-center justify-center bg-black/50 z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 sm:p-6 shadow-xl">
+            <div class="flex items-start gap-3">
+                <span data-icon="exclamation-circle" class="w-6 h-6 shrink-0 text-rose-600"></span>
+                <div>
+                    <h3 id="confirmTitle" class="text-lg font-bold text-slate-800">ยืนยันการดำเนินการ</h3>
+                    <p id="confirmMessage" class="mt-1 text-sm leading-6 text-slate-600"></p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button type="button" data-action="close-confirm-modal" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-semibold">ยกเลิก</button>
+                <button type="button" id="confirmActionButton" data-action="confirm-modal" class="inline-flex items-center gap-1.5 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-semibold">
+                    <span data-icon="trash" class="w-4 h-4"></span><span id="confirmActionLabel">ยืนยัน</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <div id="toast" role="status" aria-live="polite" class="fixed bottom-4 left-1/2 z-50 hidden max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-lg bg-emerald-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-lg"></div>
-
-    <script>
-        const defaultVocab = [
-            // บทที่ 1 (หน้า 62-63)
-            { id: 101, chapter: 1, num: 1, hanzi: "奖励旅行", pinyin: "jiǎnglì lǔxíng", eng: "incentive travel", thai: "การท่องเที่ยวเพื่อเป็นรางวัล", status: null },
-            { id: 102, chapter: 1, num: 2, hanzi: "交易会", pinyin: "jiāoyìhuì", eng: "trade fair / trade exhibition", thai: "งานแสดงสินค้า / งานเทรดแฟร์", status: null },
-            { id: 103, chapter: 1, num: 3, hanzi: "地域", pinyin: "dìyù", eng: "area; region", thai: "พื้นที่ / ภูมิภาค", status: null },
-            { id: 104, chapter: 1, num: 4, hanzi: "传递", pinyin: "chuándì", eng: "transfer", thai: "ส่งต่อ / ถ่ายทอด", status: null },
-            { id: 105, chapter: 1, num: 5, hanzi: "交流", pinyin: "jiāoliú", eng: "information exchange", thai: "แลกเปลี่ยน (ข้อมูล/ความคิดเห็น)", status: null },
-            { id: 106, chapter: 1, num: 6, hanzi: "类型", pinyin: "lèixíng", eng: "types", thai: "ประเภท / รูปแบบ", status: null },
-            { id: 107, chapter: 1, num: 7, hanzi: "博览会", pinyin: "bólǎnhuì", eng: "fair; exposition (Expo)", thai: "งานมหกรรม / งานเอ็กซ์โป", status: null },
-            { id: 108, chapter: 1, num: 8, hanzi: "典型", pinyin: "diǎnxíng", eng: "typical", thai: "ที่เป็นแบบฉบับ / ตัวอย่างที่ชัดเจน", status: null },
-            { id: 109, chapter: 1, num: 9, hanzi: "全球", pinyin: "quánqiú", eng: "global", thai: "ทั่วโลก / ระดับโลก", status: null },
-            { id: 110, chapter: 1, num: 10, hanzi: "实力", pinyin: "shílì", eng: "actual strength", thai: "ศักยภาพที่แท้จริง / ความแข็งแกร่ง", status: null },
-            { id: 111, chapter: 1, num: 11, hanzi: "面积", pinyin: "miànjī", eng: "space", thai: "พื้นที่ / ขนาดพื้นที่", status: null },
-            { id: 112, chapter: 1, num: 12, hanzi: "比例", pinyin: "bǐlì", eng: "proportion; ratio", thai: "สัดส่วน / อัตราส่วน", status: null },
-            { id: 113, chapter: 1, num: 13, hanzi: "居于领先地位", pinyin: "jūyú lǐngxiān dìwèi", eng: "in the top position", thai: "อยู่ในตำแหน่งผู้นำ / อยู่ในอันดับแนวหน้า", status: null },
-            { id: 114, chapter: 1, num: 14, hanzi: "后起之秀", pinyin: "hòuqǐzhīxiù", eng: "rising star", thai: "ดาวรุ่งพุ่งแรง / คลื่นลูกใหม่ที่มีความสามารถ", status: null },
-            { id: 115, chapter: 1, num: 15, hanzi: "超越", pinyin: "chāoyuè", eng: "beyond", thai: "ก้าวข้าม / เหนือกว่า / แซงหน้า", status: null },
-            { id: 116, chapter: 1, num: 16, hanzi: "阿联酋", pinyin: "Āliánqiú", eng: "UAE (United Arab Emirates)", thai: "สหรัฐอาหรับเอมิเรตส์ (UAE)", status: null },
-            { id: 117, chapter: 1, num: 17, hanzi: "次于", pinyin: "cì yú", eng: "second to", thai: "รองจาก...", status: null },
-            { id: 118, chapter: 1, num: 18, hanzi: "集中", pinyin: "jízhōng", eng: "concentrate / centralized", thai: "รวมศูนย์ / มุ่งเน้น", status: null },
-            { id: 119, chapter: 1, num: 19, hanzi: "从事", pinyin: "cóngshì", eng: "engage in / be engaged in", thai: "ประกอบอาชีพ / ดำเนินการเกี่ยวกับ...", status: null },
-            { id: 120, chapter: 1, num: 20, hanzi: "会场", pinyin: "huìchǎng", eng: "meeting venue / conference hall", thai: "สถานที่จัดการประชุม / ห้องประชุม", status: null },
-            { id: 121, chapter: 1, num: 21, hanzi: "筹备人", pinyin: "chóubèirén", eng: "preparation worker", thai: "ผู้จัดเตรียมงาน / คณะทำงานเตรียมการ", status: null },
-            { id: 122, chapter: 1, num: 22, hanzi: "中介商", pinyin: "zhōngjièshāng", eng: "intermediary; broker", thai: "คนกลาง / นายหน้า / โบรกเกอร์", status: null },
-            { id: 123, chapter: 1, num: 23, hanzi: "布置", pinyin: "bùzhì", eng: "arrange / decorate / set up", thai: "จัดเตรียมสถานที่ / ตกแต่ง", status: null },
-            { id: 124, chapter: 1, num: 24, hanzi: "现场", pinyin: "xiànchǎng", eng: "on site", thai: "หน้างาน / ในสถานที่จริง", status: null },
-            { id: 125, chapter: 1, num: 25, hanzi: "支援", pinyin: "zhīyuán", eng: "support", thai: "สนับสนุน / ช่วยเหลือ", status: null },
-            { id: 126, chapter: 1, num: 26, hanzi: "会议讲者", pinyin: "huìyì jiǎngzhě", eng: "conference speaker", thai: "วิทยากรในการประชุม / ผู้บรรยาย", status: null },
-            { id: 127, chapter: 1, num: 27, hanzi: "会议议程", pinyin: "huìyì yìchéng", eng: "meeting agenda", thai: "ระเบียบวาระการประชุม / กำหนดการประชุม", status: null },
-            { id: 128, chapter: 1, num: 28, hanzi: "征展", pinyin: "zhēngzhǎn", eng: "looking for exhibitor", thai: "เปิดรับสมัครผู้ออกบูธแสดงสินค้า", status: null },
-            { id: 129, chapter: 1, num: 29, hanzi: "行销", pinyin: "xíngxiāo", eng: "marketing / promotion", thai: "การตลาด / การส่งเสริมการขาย", status: null },
-            { id: 130, chapter: 1, num: 30, hanzi: "推广", pinyin: "tuīguǎng", eng: "make more wide spread; promote", thai: "เผยแพร่ / โปรโมต / ประชาสัมพันธ์", status: null },
-
-            // บทที่ 2 (หน้า 69-70)
-            { id: 201, chapter: 2, num: 1, hanzi: "房地产业", pinyin: "fángdìchǎnyè", eng: "real estate industry", thai: "อุตสาหกรรมอสังหาริมทรัพย์", status: null },
-            { id: 202, chapter: 2, num: 2, hanzi: "移动", pinyin: "yídòng", eng: "move; movable", thai: "เคลื่อนย้าย / เคลื่อนที่ได้", status: null },
-            { id: 203, chapter: 2, num: 3, hanzi: "财产", pinyin: "cáichǎn", eng: "property; asset", thai: "ทรัพย์สิน / สินทรัพย์", status: null },
-            { id: 204, chapter: 2, num: 4, hanzi: "住宅", pinyin: "zhùzhái", eng: "residence; housing", thai: "ที่อยู่อาศัย / บ้านพักอาศัย", status: null },
-            { id: 205, chapter: 2, num: 5, hanzi: "公寓", pinyin: "gōngyù", eng: "apartment; condominium", thai: "อพาร์ตเมนต์ / คอนโดมิเนียม", status: null },
-            { id: 206, chapter: 2, num: 6, hanzi: "工业", pinyin: "gōngyè", eng: "industry; industrial", thai: "อุตสาหกรรม / ทางอุตสาหกรรม", status: null },
-            { id: 207, chapter: 2, num: 7, hanzi: "农业", pinyin: "nóngyè", eng: "agriculture", thai: "เกษตรกรรม / การเกษตร", status: null },
-            { id: 208, chapter: 2, num: 8, hanzi: "居住", pinyin: "jūzhù", eng: "live; reside", thai: "อยู่อาศัย / พำนัก", status: null },
-            { id: 209, chapter: 2, num: 9, hanzi: "储存", pinyin: "chǔcún", eng: "store; storage", thai: "เก็บรักษา / กักเก็บ", status: null },
-            { id: 210, chapter: 2, num: 10, hanzi: "休闲", pinyin: "xiūxián", eng: "Leisure; Relaxation", thai: "พักผ่อนหย่อนใจ / ยามว่าง", status: null },
-            { id: 211, chapter: 2, num: 11, hanzi: "就业", pinyin: "jiùyè", eng: "employment", thai: "การจ้างงาน / การมีงานทำ", status: null },
-            { id: 212, chapter: 2, num: 12, hanzi: "装修", pinyin: "zhuāngxiū", eng: "decorate; renovation", thai: "ตกแต่งภายใน / ต่อเติมซ่อมแซม", status: null },
-            { id: 213, chapter: 2, num: 13, hanzi: "金融", pinyin: "jīnróng", eng: "finance", thai: "การเงิน", status: null },
-            { id: 214, chapter: 2, num: 14, hanzi: "推动", pinyin: "tuīdòng", eng: "promote; drive", thai: "ผลักดัน / ขับเคลื่อน", status: null },
-            { id: 215, chapter: 2, num: 15, hanzi: "租赁", pinyin: "zūlìn", eng: "lease; rental", thai: "การเช่า / ให้เช่า", status: null },
-            { id: 216, chapter: 2, num: 16, hanzi: "然而", pinyin: "rán'ér", eng: "however", thai: "อย่างไรก็ตาม / ทว่า", status: null },
-            { id: 217, chapter: 2, num: 17, hanzi: "面临", pinyin: "miànlín", eng: "be faced with", thai: "เผชิญหน้ากับ...", status: null },
-            { id: 218, chapter: 2, num: 18, hanzi: "激烈", pinyin: "jīliè", eng: "intense; fierce", thai: "ดุเดือด / รุนแรง / เข้มข้น", status: null },
-            { id: 219, chapter: 2, num: 19, hanzi: "竞争", pinyin: "jìngzhēng", eng: "competition", thai: "การแข่งขัน", status: null },
-            { id: 220, chapter: 2, num: 20, hanzi: "地理", pinyin: "dìlǐ", eng: "geography; geographical", thai: "ภูมิศาสตร์ / ทางภูมิศาสตร์", status: null },
-            { id: 221, chapter: 2, num: 21, hanzi: "位置", pinyin: "wèizhi", eng: "location; position", thai: "ทำเลที่ตั้ง / ตำแหน่ง", status: null },
-            { id: 222, chapter: 2, num: 22, hanzi: "完善", pinyin: "wánshàn", eng: "complete; well-developed", thai: "สมบูรณ์พร้อม / พัฒนาให้ดีขึ้น", status: null },
-            { id: 223, chapter: 2, num: 23, hanzi: "价值", pinyin: "jiàzhí", eng: "value", thai: "มูลค่า / คุณค่า", status: null },
-            { id: 224, chapter: 2, num: 24, hanzi: "通常", pinyin: "tōngcháng", eng: "usually", thai: "โดยปกติ / โดยทั่วไป", status: null },
-            { id: 225, chapter: 2, num: 25, hanzi: "周边", pinyin: "zhōubiān", eng: "surrounding; nearby", thai: "บริเวณโดยรอบ / ใกล้เคียง", status: null },
-            { id: 226, chapter: 2, num: 26, hanzi: "政府", pinyin: "zhèngfǔ", eng: "government", thai: "รัฐบาล", status: null },
-            { id: 227, chapter: 2, num: 27, hanzi: "土地", pinyin: "tǔdì", eng: "land", thai: "ที่ดิน", status: null },
-            { id: 228, chapter: 2, num: 28, hanzi: "贷款", pinyin: "dàikuǎn", eng: "loan", thai: "เงินกู้ / สินเชื่อ / กู้ยืมเงิน", status: null },
-            { id: 229, chapter: 2, num: 29, hanzi: "房价", pinyin: "fángjià", eng: "housing price", thai: "ราคาบ้าน / ราคาที่อยู่อาศัย", status: null },
-            { id: 230, chapter: 2, num: 30, hanzi: "项目", pinyin: "xiàngmù", eng: "project", thai: "โครงการ / โปรเจกต์", status: null }
-        ];
-
-        function loadStoredJSON(key, fallback) {
-            try {
-                const value = JSON.parse(localStorage.getItem(key));
-                return value ?? fallback;
-            } catch {
-                return fallback;
-            }
-        }
-
-        let vocabList = loadStoredJSON('bizChineseVocab_v1', JSON.parse(JSON.stringify(defaultVocab)));
-        let chapterNames = loadStoredJSON('bizChineseChapterNames_v1', {
-            1: 'นิทรรศการ',
-            2: 'อสังหาริมทรัพย์'
-        });
-        let speechRate = Number(loadStoredJSON('bizChineseSpeechRate_v1', 0.85));
-        let currentChapter = 1;
-        let currentFilter = 'all';
-        let filteredDeck = [];
-        let currentIndex = 0;
-        let isFlipped = false;
-
-        function saveToStorage() {
-            localStorage.setItem('bizChineseVocab_v1', JSON.stringify(vocabList));
-            localStorage.setItem('bizChineseChapterNames_v1', JSON.stringify(chapterNames));
-            updateProgress();
-        }
-
-        function getChapters() {
-            return [...new Set([
-                ...Object.keys(chapterNames).map(Number),
-                ...vocabList.map(w => w.chapter)
-            ])].sort((a, b) => a - b);
-        }
-
-        function getChapterName(chapter) {
-            return chapterNames[chapter] || `บทเรียน ${chapter}`;
-        }
-
-        function populateChapterSelect(selectedChapter) {
-            const select = document.getElementById('editChapter');
-            select.innerHTML = '';
-            getChapters().forEach(chapter => {
-                const option = document.createElement('option');
-                option.value = chapter;
-                option.innerText = `บทที่ ${chapter}: ${getChapterName(chapter)}`;
-                select.appendChild(option);
-            });
-            if (selectedChapter !== undefined) select.value = selectedChapter;
-        }
-
-        function renderChapterControls() {
-            const tabs = document.getElementById('chapterTabs');
-            tabs.innerHTML = '';
-            const label = document.createElement('span');
-            label.className = 'shrink-0 text-sm font-semibold text-slate-500 mr-1';
-            label.innerText = 'เลือกบทเรียน:';
-            tabs.appendChild(label);
-
-            getChapters().forEach(chapter => {
-                const button = document.createElement('button');
-                button.innerText = `บทที่ ${chapter}: ${getChapterName(chapter)} (${vocabList.filter(w => w.chapter === chapter).length})`;
-                button.className = currentChapter === chapter
-                    ? 'shrink-0 px-3 py-1.5 rounded-lg text-sm font-semibold bg-indigo-600 text-white transition'
-                    : 'shrink-0 px-3 py-1.5 rounded-lg text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition';
-                button.onclick = () => setChapter(chapter);
-                tabs.appendChild(button);
-            });
-
-            const allButton = document.createElement('button');
-            allButton.innerText = `รวมทั้งหมด (${vocabList.length})`;
-            allButton.className = currentChapter === 'all'
-                ? 'shrink-0 px-3 py-1.5 rounded-lg text-sm font-semibold bg-indigo-600 text-white transition'
-                : 'shrink-0 px-3 py-1.5 rounded-lg text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition';
-            allButton.onclick = () => setChapter('all');
-            tabs.appendChild(allButton);
-            populateChapterSelect();
-        }
-
-        function switchMode(mode) {
-            const flashcardSec = document.getElementById('flashcardSection');
-            const listSec = document.getElementById('listSection');
-            const btnFlash = document.getElementById('btnModeFlashcard');
-            const btnList = document.getElementById('btnModeList');
-
-            if (mode === 'flashcard') {
-                flashcardSec.classList.remove('hidden');
-                listSec.classList.add('hidden');
-                btnFlash.className = "flex-1 sm:flex-none px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-white text-indigo-600 shadow-sm transition";
-                btnList.className = "flex-1 sm:flex-none px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-indigo-700 text-white hover:bg-indigo-800 transition";
-                buildDeck();
-            } else {
-                flashcardSec.classList.add('hidden');
-                listSec.classList.remove('hidden');
-                btnList.className = "flex-1 sm:flex-none px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-white text-indigo-600 shadow-sm transition";
-                btnFlash.className = "flex-1 sm:flex-none px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-indigo-700 text-white hover:bg-indigo-800 transition";
-                renderTable();
-            }
-        }
-
-        function setChapter(ch) {
-            currentChapter = ch;
-            renderChapterControls();
-            buildDeck();
-            renderTable();
-            updateProgress();
-        }
-
-        function applyFilter() {
-            currentFilter = document.getElementById('statusFilter').value;
-            buildDeck();
-            renderTable();
-        }
-
-        function resetFilter() {
-            document.getElementById('statusFilter').value = 'all';
-            applyFilter();
-        }
-
-        function getChapterWords() {
-            return vocabList.filter(w => currentChapter === 'all' ? true : w.chapter === currentChapter);
-        }
-
-        function buildDeck(preferredId) {
-            const baseWords = getChapterWords();
-            filteredDeck = baseWords.filter(w => {
-                if (currentFilter === 'memorized') return w.status === 'memorized';
-                if (currentFilter === 'unmemorized') return w.status !== 'memorized';
-                return true;
-            });
-            const preferredIndex = filteredDeck.findIndex(w => w.id === preferredId);
-            currentIndex = preferredIndex >= 0 ? preferredIndex : Math.min(currentIndex, Math.max(filteredDeck.length - 1, 0));
-            isFlipped = false;
-            updateCardUI();
-            updateProgress();
-        }
-
-        function updateProgress() {
-            const baseWords = getChapterWords();
-            const total = baseWords.length;
-            const memorizedCount = baseWords.filter(w => w.status === 'memorized').length;
-            const unmemorizedCount = baseWords.filter(w => w.status === 'unmemorized').length;
-            const newCount = baseWords.filter(w => w.status === null).length;
-            const pct = total === 0 ? 0 : Math.round((memorizedCount / total) * 100);
-
-            document.getElementById('progressText').innerText = `จำได้ ${memorizedCount} • จำไม่ได้ ${unmemorizedCount} • ยังไม่ทบทวน ${newCount}`;
-            document.getElementById('progressPercent').innerText = `${pct}%`;
-            document.getElementById('progressBar').style.width = `${pct}%`;
-
-        }
-
-        function updateCardUI() {
-            const emptyState = document.getElementById('emptyFlashcardState');
-            const container = document.getElementById('flashcardContainer');
-            const cardInner = document.getElementById('cardInner');
-
-            if (filteredDeck.length === 0) {
-                emptyState.classList.remove('hidden');
-                container.classList.add('hidden');
-                return;
-            }
-            emptyState.classList.add('hidden');
-            container.classList.remove('hidden');
-
-            if (currentIndex >= filteredDeck.length) currentIndex = 0;
-            if (currentIndex < 0) currentIndex = filteredDeck.length - 1;
-
-            const word = filteredDeck[currentIndex];
-            isFlipped = false;
-            cardInner.classList.remove('rotate-y-180');
-
-            document.getElementById('cardIndexText').innerText = `คำที่ ${currentIndex + 1} จาก ${filteredDeck.length}`;
-            document.getElementById('cardFrontChapter').innerText = `บทที่ ${word.chapter} • ข้อ ${word.num}`;
-            document.getElementById('cardHanzi').innerText = word.hanzi;
-            document.getElementById('cardBackHanzi').innerText = word.hanzi;
-            document.getElementById('cardPinyin').innerText = word.pinyin;
-            document.getElementById('cardThai').innerText = word.thai;
-            document.getElementById('cardEng').innerText = word.eng;
-
-            const badge = document.getElementById('cardStatusBadge');
-            if (word.status === 'memorized') {
-                badge.className = "text-xs px-2.5 py-1 rounded-full font-semibold bg-emerald-100 text-emerald-700";
-                badge.innerText = "✅ จำได้แล้ว";
-            } else if (word.status === 'unmemorized') {
-                badge.className = "text-xs px-2.5 py-1 rounded-full font-semibold bg-rose-100 text-rose-700";
-                badge.innerText = "❌ ยังจำไม่ได้";
-            } else {
-                badge.className = "text-xs px-2.5 py-1 rounded-full font-semibold bg-slate-200 text-slate-600";
-                badge.innerText = "ยังไม่ได้ประเมิน";
-            }
-        }
-
-        function flipCard() {
-            isFlipped = !isFlipped;
-            document.getElementById('cardInner').classList.toggle('rotate-y-180', isFlipped);
-        }
-
-        function nextCard() {
-            if (filteredDeck.length === 0) return;
-            currentIndex = (currentIndex + 1) % filteredDeck.length;
-            updateCardUI();
-        }
-
-        function prevCard() {
-            if (filteredDeck.length === 0) return;
-            currentIndex = (currentIndex - 1 + filteredDeck.length) % filteredDeck.length;
-            updateCardUI();
-        }
-
-        function markWord(isMemorized) {
-            if (filteredDeck.length === 0) return;
-            const currentWord = filteredDeck[currentIndex];
-            const target = vocabList.find(w => w.id === currentWord.id);
-            if (target) {
-                target.status = isMemorized ? 'memorized' : 'unmemorized';
-                saveToStorage();
-            }
-            if (currentFilter !== 'all') {
-                buildDeck(currentWord.id);
-            } else {
-                updateCardUI();
-                setTimeout(() => nextCard(), 250);
-            }
-        }
-
-        function shuffleCards() {
-            for (let i = filteredDeck.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [filteredDeck[i], filteredDeck[j]] = [filteredDeck[j], filteredDeck[i]];
-            }
-            currentIndex = 0;
-            updateCardUI();
-        }
-
-        function resetProgress() {
-            if (!confirm('ต้องการรีเซ็ตสถานะ จำได้/จำไม่ได้ ทั้งหมดใช่หรือไม่?')) return;
-            vocabList.forEach(w => w.status = null);
-            saveToStorage();
-            buildDeck();
-        }
-
-        function speakText(text) {
-            if (!('speechSynthesis' in window)) {
-                alert('เบราว์เซอร์ของคุณไม่รองรับการอ่านออกเสียง');
-                return;
-            }
-            window.speechSynthesis.cancel();
-            const utter = new SpeechSynthesisUtterance(text);
-            utter.lang = 'zh-CN';
-            utter.rate = speechRate;
-            window.speechSynthesis.speak(utter);
-        }
-
-        function setSpeechRate(rate) {
-            speechRate = Number(rate);
-            localStorage.setItem('bizChineseSpeechRate_v1', speechRate);
-        }
-
-        function escapeHTML(value) {
-            return String(value).replace(/[&<>"']/g, character => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#39;'
-            })[character]);
-        }
-
-        function speakCurrentWord(e) {
-            e.stopPropagation();
-            if (filteredDeck.length === 0) return;
-            speakText(filteredDeck[currentIndex].hanzi);
-        }
-
-        function renderTable() {
-            const tbody = document.getElementById('vocabTableBody');
-            const query = (document.getElementById('searchInput').value || '').toLowerCase();
-            const words = getChapterWords().filter(w => {
-                if (currentFilter === 'memorized' && w.status !== 'memorized') return false;
-                if (currentFilter === 'unmemorized' && w.status === 'memorized') return false;
-                if (!query) return true;
-                return w.hanzi.toLowerCase().includes(query) ||
-                       w.pinyin.toLowerCase().includes(query) ||
-                       w.eng.toLowerCase().includes(query) ||
-                       w.thai.toLowerCase().includes(query);
-            });
-
-            tbody.innerHTML = words.map(w => `
-                <tr class="hover:bg-slate-50">
-                    <td class="py-3 px-4 text-slate-400 font-medium">${w.chapter}.${w.num}</td>
-                    <td class="py-3 px-4">
-                        <div class="flex items-center gap-2">
-                            <span class="chinese-text text-lg font-bold text-slate-800">${escapeHTML(w.hanzi)}</span>
-                            <button onclick="speakText(${escapeHTML(JSON.stringify(w.hanzi))})" class="text-indigo-500 hover:text-indigo-700 text-xs bg-indigo-50 px-2 py-0.5 rounded">🔊</button>
-                        </div>
-                    </td>
-                    <td class="py-3 px-4 text-indigo-600 font-medium">${escapeHTML(w.pinyin)}</td>
-                    <td class="py-3 px-4">                       
-                        <div class="font-semibold text-slate-800">${escapeHTML(w.eng)}</div>
-                        <div class="text-xs text-slate-500">${escapeHTML(w.thai)}</div>
-                    </td>
-                    <td class="py-3 px-4 text-center">
-                        <button onclick="toggleStatusInTable(${w.id})" class="px-2.5 py-1 rounded-full text-xs font-semibold ${
-                            w.status === 'memorized' ? 'bg-emerald-100 text-emerald-700' :
-                            w.status === 'unmemorized' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'
-                        }">
-                            ${w.status === 'memorized' ? '✅ จำได้' : w.status === 'unmemorized' ? '❌ จำไม่ได้' : '⚪ กดเปลี่ยน'}
-                        </button>
-                    </td>
-                    <td class="py-3 px-4 text-right space-x-1 whitespace-nowrap">
-                        <button onclick="openEditModal(${w.id})" class="px-2.5 py-1 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded text-xs font-semibold">แก้ไข</button>
-                        <button onclick="deleteWord(${w.id})" class="px-2.5 py-1 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded text-xs font-semibold">ลบ</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function toggleStatusInTable(id) {
-            const word = vocabList.find(w => w.id === id);
-            if (!word) return;
-            word.status = word.status === 'memorized' ? 'unmemorized' : 'memorized';
-            saveToStorage();
-            renderTable();
-        }
-
-        function openEditModal(id) {
-            const word = vocabList.find(w => w.id === id);
-            if (!word) return;
-            populateChapterSelect(word.chapter);
-            document.getElementById('modalTitle').innerText = 'แก้ไขคำศัพท์';
-            document.getElementById('editId').value = word.id;
-            document.getElementById('editChapter').value = word.chapter;
-            document.getElementById('editHanzi').value = word.hanzi;
-            document.getElementById('editPinyin').value = word.pinyin;
-            document.getElementById('editEng').value = word.eng;
-            document.getElementById('editThai').value = word.thai;
-            document.getElementById('editModal').classList.remove('hidden');
-            document.getElementById('editModal').classList.add('flex');
-        }
-
-        function openAddModal() {
-            document.getElementById('modalTitle').innerText = 'เพิ่มคำศัพท์ใหม่';
-            document.getElementById('editId').value = '';
-            populateChapterSelect(currentChapter === 'all' ? getChapters()[0] : currentChapter);
-            document.getElementById('editHanzi').value = '';
-            document.getElementById('editPinyin').value = '';
-            document.getElementById('editEng').value = '';
-            document.getElementById('editThai').value = '';
-            document.getElementById('editModal').classList.remove('hidden');
-            document.getElementById('editModal').classList.add('flex');
-        }
-
-        function createLesson() {
-            const input = document.getElementById('newLessonName');
-            const name = input.value.trim();
-            if (!name) {
-                input.focus();
-                return;
-            }
-            const chapters = getChapters();
-            const chapter = chapters.length ? Math.max(...chapters) + 1 : 1;
-            chapterNames[chapter] = name;
-            saveToStorage();
-            renderChapterControls();
-            document.getElementById('editChapter').value = chapter;
-            input.value = '';
-        }
-
-        function closeModal() {
-            document.getElementById('editModal').classList.add('hidden');
-            document.getElementById('editModal').classList.remove('flex');
-        }
-
-        function saveWord() {
-            const id = document.getElementById('editId').value;
-            const chapter = parseInt(document.getElementById('editChapter').value);
-            const hanzi = document.getElementById('editHanzi').value.trim();
-            const pinyin = document.getElementById('editPinyin').value.trim();
-            const eng = document.getElementById('editEng').value.trim();
-            const thai = document.getElementById('editThai').value.trim();
-
-            if (!hanzi || !pinyin) {
-                alert('กรุณากรอกคำศัพท์ภาษาจีนและพินอิน');
-                return;
-            }
-
-            if (id) {
-                const word = vocabList.find(w => w.id == id);
-                if (word) {
-                    word.chapter = chapter;
-                    word.hanzi = hanzi;
-                    word.pinyin = pinyin;
-                    word.eng = eng;
-                    word.thai = thai;
-                }
-            } else {
-                const chWords = vocabList.filter(w => w.chapter === chapter);
-                const nextNum = chWords.length ? Math.max(...chWords.map(w => w.num)) + 1 : 1;
-                vocabList.push({
-                    id: Date.now(),
-                    chapter,
-                    num: nextNum,
-                    hanzi,
-                    pinyin,
-                    eng,
-                    thai,
-                    status: null
-                });
-            }
-            saveToStorage();
-            closeModal();
-            renderTable();
-            buildDeck();
-        }
-
-        function deleteWord(id) {
-            if (!confirm('ต้องการลบคำศัพท์นี้ใช่หรือไม่?')) return;
-            vocabList = vocabList.filter(w => w.id !== id);
-            saveToStorage();
-            renderTable();
-            buildDeck();
-        }
-
-        function restoreDefaultVocab() {
-            if (!confirm('คืนค่าคำศัพท์เริ่มต้นทั้ง 60 คำ (ข้อมูลที่แก้ไขเพิ่มเติมจะถูกล้าง) ยืนยันหรือไม่?')) return;
-            vocabList = JSON.parse(JSON.stringify(defaultVocab));
-            chapterNames = { 1: 'นิทรรศการ', 2: 'อสังหาริมทรัพย์' };
-            saveToStorage();
-            renderChapterControls();
-            renderTable();
-            buildDeck();
-        }
-
-        let toastTimeout;
-
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.toggle('bg-red-500', isError);
-            toast.classList.toggle('bg-emerald-500', !isError);
-            toast.classList.remove('hidden');
-            clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => toast.classList.add('hidden'), 3000);
-        }
-
-        async function shareVocabText() {
-            const words = getChapterWords();
-            let text = `📚 คำศัพท์ภาษาจีนธุรกิจ (${currentChapter === 'all' ? 'ทั้งหมด' : 'บทที่ ' + currentChapter})\n\n`;
-            words.forEach(w => {
-                text += `${w.num}. ${w.hanzi} (${w.pinyin}) = ${w.thai} [${w.eng}]\n`;
-            });
-            try {
-                await navigator.clipboard.writeText(text);
-                showToast('คัดลอกรายการคำศัพท์แล้ว');
-            } catch {
-                showToast('คัดลอกไม่สำเร็จ กรุณาตรวจสอบสิทธิ์คลิปบอร์ด', true);
-            }
-        }
-
-        document.getElementById('speechRate').value = speechRate;
-        document.addEventListener('keydown', event => {
-            if (event.target.matches('input, select, textarea')) return;
-            if (event.key === ' ') {
-                event.preventDefault();
-                flipCard();
-            } else if (event.key === 'ArrowLeft') {
-                prevCard();
-            } else if (event.key === 'ArrowRight') {
-                nextCard();
-            } 
-            // else if (event.key === '1') {
-            //     markWord(false);
-            // } else if (event.key === '2') {
-            //     markWord(true);
-            // }
-        });
-
-        // Initialize
-        renderChapterControls();
-        buildDeck();
-    </script>
+    <div id="toast" role="status" aria-live="polite" class="fixed bottom-4 left-1/2 z-50 hidden max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-2 rounded-lg bg-emerald-500 px-4 py-3 text-center text-sm font-semibold text-white shadow-lg"></div>
 </body>
 </html>
